@@ -1,4 +1,3 @@
-
 import time
 import numpy as np
 np.random.seed(0)
@@ -222,15 +221,4 @@ def Exercise6():
 #####################################
 #############Exercise #6
 #################################
-Exercise6()
-
-#print(Backward(U, b))
-#print(L)
-#print(Forward(L, b))
-
-#print(P)
-#print(U)
-
-#print(np.dot(L,U))
-#print(np.dot(P,A))
-
+#Exercise6()
