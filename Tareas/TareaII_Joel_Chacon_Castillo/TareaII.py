@@ -1,63 +1,22 @@
-
 import time
 import numpy as np
 np.random.seed(0)
 
 #Cholesky Factorization, Algorithm 23.1 taken of the Trefethen pag.175
-def Cholesky(A):
-  R = np.copy(A)
-  m = len(R[:,0])
-  for k in range(0, m):
-      for j in range(k+1, m):
-          R[j,j:m] -= R[k, j:m]*(R[k,j]/R[k,k])
-      R[k,k:m] = R[k,k:m]/np.sqrt(R[k,k])
-  R  = np.triu(R, k=0)
-  return R
-def Backward(U, b):
-   m = len(U[:,0]) ##get the number of rows..
-   x = np.zeros(m)
-   for j in range(m-1, -1, -1):
-     x[j] = b[j]
-     for k in range(j+1, m):
-         x[j] -= x[k] * U[j,k]
-     x[j] /=U[j,j]
-   return x
-def Forward(L,b):
-   m = len(L[:,0]) ##get the number of rows..
-   x = np.zeros(m)
-   for j in range(0,m):
-     x[j] = b[j]
-     for k in range(0, j):
-         x[j] -= x[k] * L[j,k]
-     x[j] /=L[j,j]
-   return x
+def QR(A):
+  V = np.copy(A)
 
-#Gaussian Elimination with Partial Pivoting which is taken of Trefethen book pag. 160
-def GEPP(A_Matrix):
-   A = A_Matrix.copy()
-   m = len(A)
-   L = np.eye(m, m)
-   U = A.copy()
-   P = np.eye(m, m)
-   for k in range(0, m-1):
-      #Select i >= k to maximize | u_{ik} | 
-      i = np.argmax( np.abs(U[k:m, k]))+k
-      U[[k, i],k:m] = U[[i, k],k:m]
-      L[[k, i],0:k] = L[[i, k],0:k]
-      P[[k, i],:] = P[[i, k],:]
-      #Interchange two rows
-      #Interchange Permutation matrix
-      for j in range(k+1, m):
-         L[j, k] = np.copy(U[j,k]/U[k,k])
-         U[j,k:m+1] = np.copy(U[j, k:m+1] - L[j,k]*U[k,k:m+1])
-   cont = 0
-   for i in range(0,m):
-     if np.abs(U[i,i]) > 1e-20:
-        cont +=1 
-   if cont < m:
-      print("La matriz a factorizar no tiene rango completo") 
-      exit(0)
-   return P, L, U
+  m,n = np.shape(A)
+  Q = np.zeros(m,m)
+  R = np.zeros(m,n)
+
+  for i in range(0,m):
+      R[i,i] = np.norm(V[:,i])
+      Q[:,i] = V[:,i]/R[i,i]
+    for j in range(i+1, n):
+        R[i,j] = np.dot(np.transpose(Q[:i]),V[:,j])
+        V[:,j] -= R[i,j]*Q[:,i] 
+  return Q,R
 
 def Exercise3():
  A =  np.array([[1.0, 0.0, 0.0, 0.0, 1.0],[-1.0, 1.0, 0.0, 0.0, 1.0],[-1.0, -1.0, 1.0, 0.0, 1.0],[-1.0, -1.0, -1.0, 1.0, 1.0],[-1.0, -1.0, -1.0, -1.0, 1.0]])
@@ -202,7 +161,7 @@ def Exercise6():
 #####################################
 #############Exercise #3
 #################################
-Exercise3()
+#Exercise3()
 
 
 ##############################33####################################
@@ -223,14 +182,3 @@ Exercise3()
 #############Exercise #6
 #################################
 #Exercise6()
-
-#print(Backward(U, b))
-#print(L)
-#print(Forward(L, b))
-
-#print(P)
-#print(U)
-
-#print(np.dot(L,U))
-#print(np.dot(P,A))
-
