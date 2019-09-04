@@ -18,7 +18,7 @@ def Backward(U, b):
      x[j] /=U[j,j]
    return x
 
-#Cholesky Factorization, Algorithm 23.1 taken of the Trefethen pag.175
+#QR Factorization, Algorithm 23.1 taken of the Trefethen pag.175
 def QR(A):
   V = np.copy(A)
   m,n = np.shape(A)
@@ -32,20 +32,21 @@ def QR(A):
         V[:,j] -= R[i,j]*Q[:,i] 
   return Q,R
 
-def Least_Squares(Y, p):
+##Returns the vandermonde system and the coefficients coefficeints fitted
+def Least_Squares(X, Y, p, scip = False):
  #checking generic example...
  #A = np.array([[3.0, -6.0], [4.0, -8.0], [0.0, 1.0]])
  #b = np.array([-1.0, 7.0, 2.0])
-
  ##building Vandermonde system..
  A = np.zeros([len(Y), p+1])
  for i in range(p+1):
-   A[:,i] = np.power(Y, i)
- #Q,R = QR(A)
- Q, R = scipy.linalg.qr(A,  mode='reduced')
- print(np.shape(A))
- print(np.shape(Q))
- print(np.shape(R))
+   A[:,i] = np.power(X, i)
+
+ print("condition "+ str(np.linalg.cond(A) ))
+ if scip == False:
+  Q,R = QR(A)
+ else:
+  Q, R = scipy.linalg.qr(A,  mode='economic')
  return A, Backward(R, np.dot(np.transpose(Q), Y))
  
 
@@ -57,47 +58,105 @@ def Exercise1():
  print(R)
 
 def Exercise2():
-# A =  np.array([[1.0, 0.0, 0.0, 0.0, 1.0],[-1.0, 1.0, 0.0, 0.0, 1.0],[-1.0, -1.0, 1.0, 0.0, 1.0],[-1.0, -1.0, -1.0, 1.0, 1.0],[-1.0, -1.0, -1.0, -1.0, 1.0]])
-  Y = np.ones([3])
+  ####### Artifitial data is emplyed
+  nPoints = 5
+  Degree = 3
+  Y = np.arange(1.0, nPoints+1, 1.0)
+  X = np.array([1.2, 5.6, 7.8, 5.6, 8.8])
+
+  [A, C] = Least_Squares(X, Y, Degree-1) 
   Degree = 2
-  [A, C] = Least_Squares(Y, Degree)
   print(A)
   print(A.dot(C))
-  
 
-def Exercise3():
-    ###Artifitial data....
-    nPoints = 500;
+def Ploting():
+ ###Artifitial data....
+    nPoints = 1000;
     sigma = 0.11
     X = np.arange(1.0, nPoints+1, 1.0)
     X = (4.0*np.pi*X)/nPoints
     Y = np.sin(X) +  np.random.normal(0.0, sigma, nPoints)
+    plt.plot(X, Y,'r.', label= 'Generated Points' )
+    for Degree in [3, 4, 6, 100]:
+     #Degree = 5
+     ##Training....
+     [A, C] = Least_Squares(X, Y, Degree-1) 
+#     print(A)
 
-    Degree = 5
-    ##Training....
-    [A, C] = Least_Squares(Y, Degree) 
-    print(A)
-
-
-    ##Testing...
-    xgrid = np.linspace(0, 15, 50)   
+     Ntest = 1000
+     ##Testing...
+     xgrid = np.linspace(0.0, 12.0, Ntest)   
    
-    YP = np.zeros(50)
+     YP = np.zeros(Ntest)
 
-    for i in range(Degree+1):
-      YP += C[i]*np.power(xgrid, i)
+     for i in range(Degree):
+       YP += C[i]*np.power(xgrid, i)
+     plt.plot(xgrid, YP, label='P='+str(Degree))
 
-    plt.plot(xgrid, YP)
-    plt.plot(X, Y)
+    plt.legend(framealpha=1, frameon=True)
+    plt.xlabel('X', fontsize=18)
+    plt.ylabel('Y', fontsize=16)
+    plt.title('Data with a training set of 1000 points')
+#    plt.savefig('1000.eps')
     plt.show()
-    
-    print(C)
-    
+
+def Times1():
+ ###Artifitial data....
+  for nPoints in [100, 1000, 10000]:
+    sigma = 0.11
+    X = np.arange(1.0, nPoints+1, 1.0)
+    X = (4.0*np.pi*X)/nPoints
+    Y = np.sin(X) +  np.random.normal(0.0, sigma, nPoints)
+    for Degree in [3, 4, 6, 100]:
+     ##Training....
+     start1 = time.time()
+     [A, C] = Least_Squares(X, Y, Degree-1) 
+     end1 = time.time()
+
+     start2 = time.time()
+     [A, C] = Least_Squares(X, Y, Degree-1, True)  ##Checking with scify..
+     end2 = time.time()
+
+     print(str(nPoints) + "/" + str(Degree) + " " +str(end1-start1) + " " + str(end2-start2))
+    ##Only yhe fitting time is taken into account... cX
+   ##  Ntest = 1000
+   ##  ##Testing...
+   ##  xgrid = np.linspace(0.0, 12.0, Ntest)   
+   ##
+   ##  YP = np.zeros(Ntest)
+
+   ##  for i in range(Degree):
+   ##    YP += C[i]*np.power(xgrid, i)
+
+
+def Exercise3():
+    Ploting()
+    Times()
+       
 def Exercise4():
-    print("no yet")
+ ###Artifitial data....
+  #for Degree in [3, 4, 6, 100, 200]:
+  for Degree in np.arange(1, 1000, 100):
+    nPoints = Degree*10
+    sigma = 0.11
+    X = np.arange(1.0, nPoints+1, 1.0)
+    ###X = (4.0*np.pi*X)/100000#nPoints reformulation to avoid the condition issue ---Stability
+    X = (4.0*np.pi*X)/nPoints
+    Y = np.sin(X) 
+    Y = np.random.normal(0.0, sigma, nPoints)
+     ##Training....
+    start1 = time.time()
+    [A, C] = Least_Squares(X, Y, Degree-1) 
+    end1 = time.time()
+
+    start2 = time.time()
+    [A, C] = Least_Squares(X, Y, Degree-1, True)  ##Checking with scify..
+    end2 = time.time()
+    print(str(nPoints) + "/" + str(Degree) + " " +str(end1-start1) + " " + str(end2-start2))
+
 
 
 #Exercise1()
 #Exercise2()
-Exercise3()
+#Exercise3()
 #Exercise4()
