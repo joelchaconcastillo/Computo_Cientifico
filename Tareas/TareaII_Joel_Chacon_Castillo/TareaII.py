@@ -42,6 +42,13 @@ def Exercise2():
  b = np.ones([5,1])
  print(Least_Squares(A,b))
 
+def Exercise3():
+    print("no yet")
+def Exercise4():
+    print("no yet")
+
 
 Exercise1()
 Exercise2()
+Exercise3()
+Exercise4()
