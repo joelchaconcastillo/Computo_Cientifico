@@ -9,10 +9,9 @@ import scipy
 import scipy.linalg   # SciPy Linear Algebra Library
 import sys
 np.set_printoptions(threshold=sys.maxsize)
-#np.random.seed(0)
+np.random.seed(3)
 def Kappa(A):
   BEigs = np.linalg.eigvals(A)
-  print(BEigs)
   return np.max(BEigs)/np.min(BEigs)
 
 def Cholesky(A):
@@ -70,9 +69,31 @@ def Exercise1A():
    ###well-conditioned.....########################################
    #Q,R = scipy.linalg.qr(A, mode='economic')
 #   #Lambda = np.arange(1.0, 21.0, 1.0)
-   Lambda = np.linspace(1e2, 1.0, m)
-   Lambda2 = Lambda + np.random.normal(0.0, 0.01, m)
+   Lambda = np.linspace(20, 1.0, m)
+   randomv = np.random.normal(0.0, 0.01, m)
+   Lambda2 = Lambda + randomv
 
+
+   B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
+   Beps = np.dot(np.dot(np.transpose(Q), np.diag(Lambda2)), Q)
+
+   Start1 = time.time()
+   R1 = Cholesky(B)
+   End1 = time.time()
+   
+   Start2 = time.time()
+   R2 = Cholesky(Beps)
+   End2 = time.time()
+
+
+   print(str( Kappa(B) ) + " " + str( Kappa(Beps)) + " "+str( Kappa(B) -  Kappa(Beps)))
+   print(str( Kappa(R1) ) + " " + str( Kappa(R2)))
+   print( str(End1-Start1) + " " +str(End2-Start2))
+
+########## ill-conditioned.....
+
+   Lambda = np.linspace(1e10, 1.0, m)
+   Lambda2 = Lambda + randomv
 
    B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
    Beps = np.dot(np.dot(np.transpose(Q), np.diag( np.abs(Lambda2))), Q)
@@ -85,21 +106,55 @@ def Exercise1A():
    R2 = Cholesky(Beps)
    End2 = time.time()
 
-   #print(str(np.linalg.cond(B,-2)) + " " + str(np.linalg.cond(Beps, -2) ))
-   print(str( Kappa(B) ) + " " + str( Kappa(Beps)))
+
+   print(str( Kappa(B) ) + " " + str( Kappa(Beps)) + " "+str( Kappa(B) -  Kappa(Beps)))
+   print(str( Kappa(R1) ) + " " + str( Kappa(R2)))
    print( str(End1-Start1) + " " +str(End2-Start2))
-   exit()
-########## ill-conditioned.....
-   A =  uniform.rvs(0,10, (m,n))
-#   A = np.random.uniform(0,1,(20, 50))
+
+
+##extra experiment...
+   for condi in range(1,50000,1000):
+      Lambda = np.linspace(condi, 1.0, m)
+      Lambda2 = Lambda + randomv
+
+
+      B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
+      Beps = np.dot(np.dot(np.transpose(Q), np.diag( np.abs(Lambda2))), Q)
+
+      Start1 = time.time()
+      R1 = Cholesky(B)
+      End1 = time.time()
+      
+      Start2 = time.time()
+      R2 = Cholesky(Beps)
+      End2 = time.time()
+
+
+      #print(str( Kappa(B) ) + " " + str( Kappa(Beps)) + " "+str( np.abs(Kappa(B) -  Kappa(Beps)) ))
+  #    print(str( Kappa(R1) ) + " " + str( Kappa(R2)) + " "+str( np.abs(Kappa(R1) -  Kappa(R2)) ))
+      #print( str(End1-Start1) + " " +str(End2-Start2))
+      print(str( Kappa(R1) ) + " " + str( Kappa(R2)))
+
+
+def Exercise1_B_C():
+   m=20
+   n=50
+#   A =  uniform.rvs( 0.0, 1.0, (m,n))
+   A = np.random.uniform(0.0,1.0,(m,n))
    Q,R = QR(A)
    Q = np.copy(Q[0:m, 0:m])
    R = np.copy(R[0:m, 0:n])
-   #Q,R = scipy.linalg.qr(A, mode='economic')
-   Lambda = np.linspace(30, 1.0, m)
-   B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
-   Beps = np.dot(np.dot(np.transpose(Q), np.diag( np.abs(Lambda  + np.random.normal(0.0, 0.01, m) ))), Q)
 
+   ###well-conditioned.....########################################
+   #Q,R = scipy.linalg.qr(A, mode='economic')
+#   #Lambda = np.arange(1.0, 21.0, 1.0)
+   Lambda = np.linspace(20, 1.0, m)
+   randomv = np.random.normal(0.0, 0.01, m)
+   Lambda2 = Lambda + randomv
+
+
+   B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
+   Beps = np.dot(np.dot(np.transpose(Q), np.diag(Lambda2)), Q)
 
    Start1 = time.time()
    R1 = Cholesky(B)
@@ -109,33 +164,84 @@ def Exercise1A():
    R2 = Cholesky(Beps)
    End2 = time.time()
 
-#   print(scipy.linalg.cholesky(B))
-   #Cholesky(Beps)
-   print(str(np.linalg.cond(R1)) + " " + str(np.linalg.cond(R2) ))
-   print( str(End1-Start1) + " " +str(End2-Start2))
+   Start3 = time.time()
+   R3 = scipy.linalg.cholesky(B)
+   End3 = time.time()
+   
+   Start4 = time.time()
+   R4 = scipy.linalg.cholesky(Beps)
+   End4 = time.time()
 
 
-def Exercise1B_C():
-   m=200
-   n=500
+   print(str( Kappa(R1) ) + " " + str( Kappa(R2)) + " "+str( Kappa(R3) ) + " " + str( Kappa(R4)) + " "+str( Kappa(B) -  Kappa(Beps)))
+   print( str(End1-Start1) + " " +str(End2-Start2) + " "+ str(End3-Start3) + " " +str(End4-Start4))
+
+
 ########## ill-conditioned.....
-   A = np.random.uniform(0,1,(m, n))
-   Q,R = QR(A)
-   Q = np.copy(Q[0:m, 0:m])
-   R = np.copy(R[0:m, 0:n])
-   Lambda = np.linspace(2, 1e-5, m)
-   B_ill = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
+
+   Lambda = np.linspace(1e10, 1.0, m)
+   Lambda2 = Lambda + randomv
+
+   B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
+   Beps = np.dot(np.dot(np.transpose(Q), np.diag( np.abs(Lambda2))), Q)
 
    Start1 = time.time()
-   R1 = Cholesky(B_ill)
+   R1 = Cholesky(B)
    End1 = time.time()
    
    Start2 = time.time()
-   R2 = scipy.linalg.cholesky(B_ill)
+   R2 = Cholesky(Beps)
    End2 = time.time()
 
-   print(str(np.linalg.cond(B_ill) ))
-   print( str(End1-Start1) + " " +str(End2-Start2))
+   Start3 = time.time()
+   R3 = scipy.linalg.cholesky(B)
+   End3 = time.time()
+   
+   Start4 = time.time()
+   R4 = scipy.linalg.cholesky(Beps)
+   End4 = time.time()
+
+
+   print(str( Kappa(R1) ) + " " + str( Kappa(R2)) + " "+str( Kappa(R3) ) + " " + str( Kappa(R4)) + " "+str( Kappa(B) -  Kappa(Beps)))
+   print( str(End1-Start1) + " " +str(End2-Start2) + " "+ str(End3-Start3) + " " +str(End4-Start4))
+
+
+##extra experiment...
+   for condi in range(1,50000,1000):
+      Lambda = np.linspace(condi, 1.0, m)
+      Lambda2 = Lambda + randomv
+
+
+      B = np.dot(np.dot(np.transpose(Q), np.diag(Lambda)), Q)
+      Beps = np.dot(np.dot(np.transpose(Q), np.diag( np.abs(Lambda2))), Q)
+
+      Start1 = time.time()
+      R1 = Cholesky(B)
+      End1 = time.time()
+      
+      Start2 = time.time()
+      R2 = Cholesky(Beps)
+      End2 = time.time()
+
+      Start3 = time.time()
+      R3 = scipy.linalg.cholesky(B)
+      End3 = time.time()
+      
+      Start4 = time.time()
+      R4 = scipy.linalg.cholesky(Beps)
+      End4 = time.time()
+
+
+#      print(str( Kappa(R1) ) + " " + str( Kappa(R2)) + " "+str( Kappa(R3) ) + " " + str( Kappa(R4)) + " "+str( Kappa(B) -  Kappa(Beps)))
+      print( str(End1-Start1) + " " +str(End2-Start2) + " "+ str(End3-Start3) + " " +str(End4-Start4))
+
+
+
+      #print(str( Kappa(B) ) + " " + str( Kappa(Beps)) + " "+str( np.abs(Kappa(B) -  Kappa(Beps)) ))
+  #    print(str( Kappa(R1) ) + " " + str( Kappa(R2)) + " "+str( np.abs(Kappa(R1) -  Kappa(R2)) ))
+#      print( str(End1-Start1) + " " +str(End2-Start2))
+
+
 
 def Exercise2A():
    n = 20
@@ -160,17 +266,15 @@ def Exercise2B():
    n = 20
    d = 5
    beta = np.array([5,4,3,2,1])
-#   Xv = np.random.uniform(0,1,(n))
    XM = np.random.uniform(0,1,(n, d)) 
-   #XM[0,:] = np.random.uniform(0,1e-300,(1,d))+XM[1,:]
-   XM[:,1] = XM[:,0]+ np.random.uniform(0,1e-6,(1,n))
+
+   XM[:,1] = np.copy(XM[:,0])+ np.random.uniform(0,1e-15,(1,n))
    ##simulating y....
    y = np.dot(XM, beta) + np.random.normal(0.0, 0.15, n)
    #######
    betahat = Least_Squares(XM, y)
 
    XMDelta = XM + np.random.normal(0.0, 0.01, (n, d))
-   XMDelta[:,1] = XMDelta[:,0]+ np.random.uniform(0,1e-6,(1,n))
 
    betap= Least_Squares(XMDelta, y)
    betac = np.dot(scipy.linalg.inv(np.dot(np.transpose(XMDelta),XMDelta)), np.transpose(XMDelta).dot(y) )
@@ -181,6 +285,6 @@ def Exercise2B():
 
 
 #Exercise1A()
-#Exercise1B_C()
+#Exercise1_B_C()
 #Exercise2A()
-Exercise2B()
+#Exercise2B()
