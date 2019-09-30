@@ -28,22 +28,32 @@ def QR(A):
         R[i,j] = np.dot(np.transpose(Q[:,i]),V[:,j])
         V[:,j] -= R[i,j]*Q[:,i] 
   return Q,R
+def Practical_QR_iterative_without_shift(A):
+    dim = (A[:,0]).size
+    Qf = np.identity(dim)
+    Ak = np.copy(A)#np.dot(np.dot( np.transpose(Q), np.copy(A)), Q)
+    Tol = 1e-10
+    for i in range(dim,1,-1):
+     while np.abs(Ak[i-1, i-2]) > Tol:
+        #Q,R = QR(Ak[0:i,0:i] - muI)
+        Q, R = scipy.linalg.qr( Ak[0:i,0:i],  mode='economic')
+        Ak[0:i, 0:i] = np.dot(R, Q)
+        QAugmented = np.identity(dim)
+        QAugmented[0:i, 0:i] = np.copy(Q)
+        Qf = (Qf).dot(QAugmented)
+    return Ak, (Qf)
+
 def Practical_QR_iterative(A):
     dim = (A[:,0]).size
     Qf = np.identity(dim)
     Ak = np.copy(A)#np.dot(np.dot( np.transpose(Q), np.copy(A)), Q)
     Tol = 1e-10
-    for i in range(dim,0,-1):
+    for i in range(dim,1,-1):
      while np.abs(Ak[i-1, i-2]) > Tol:
         muI = Ak[i-1, i-1]*np.identity(i)
         #Q,R = QR(Ak[0:i,0:i] - muI)
         Q, R = scipy.linalg.qr( Ak[0:i,0:i]-muI,  mode='economic')
-	print("====Q====")
-	print(Q)
-	print("====R====")
-	print(R)
         Ak[0:i, 0:i] = np.dot(R, Q) + muI
-        print(Ak)
         QAugmented = np.identity(dim)
         QAugmented[0:i, 0:i] = np.copy(Q)
         Qf = (Qf).dot(QAugmented)
@@ -68,20 +78,25 @@ def Exercise2():
     A = np.array([[8.0, 1.0, 0.0], [1.0, 4.0, epsilon], [0.0, epsilon, 1.0]])
     Sigma, Q = Practical_QR_iterative(A)
     print("=========================")
-    print(N)
-    print(Kappa(A))
+    print("N: "+str(N))
+    print("Condition number: " + str(Kappa(A)))
+    print("A:")
     print(A)
+    print("Eigenvalues: ")
     print(Sigma)
+    print("Eigenvectors: ")
     print(Q)
     #print(np.dot(np.dot(np.transpose(Q),Sigma), Q))
 def Exercise5():
-    A = 1.0/3.0*np.array([[2.0, -2.0, 1.0], [1.0, 2.0, 2.0], [2.0, 1.0, -2.0]])
+    #A = 1.0/3.0*np.array([[2.0, -2.0, 1.0], [1.0, 2.0, 2.0], [2.0, 1.0, -2.0]])
+    ###Orthogonal matrix
+    A = np.array([[0.6667, 0.7454, 0.0000], [-0.7454,0.6667, 0.0000], [0,0.0000,1.0000]])
     print(A) 
-    Sigma, Q = Practical_QR_iterative(A)
+    Sigma, Q = Practical_QR_iterative_without_shift(A)
     print(Sigma)
     print(Q)
     print(np.dot(np.dot(np.transpose(Q),Sigma), Q))
 
 
-#Exercise2()
-Exercise5()
+Exercise2()
+#Exercise5()
