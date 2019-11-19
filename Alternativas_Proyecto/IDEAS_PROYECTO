@@ -1,0 +1,4 @@
+1)Take into account the Kullback-Leiber convergence as a measurement to attain an optimization problem by gradient.
+2)Try to apply a MCMC adaptive to simulate from the Boltzman distribution.
+3)Can those strategies aboid premature convergence in in newton-methdos???
+

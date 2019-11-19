@@ -10,7 +10,7 @@ import scipy
 import scipy.linalg   # SciPy Linear Algebra Library
 import sys
 np.set_printoptions(threshold=sys.maxsize)
-np.random.seed(3)
+#np.random.seed(3)
 
 def weib(x,n,a):
      return (a / n) * (x / n)**(a - 1) * np.exp(-(x / n)**a)
@@ -141,22 +141,22 @@ def Punto2():
        zl[i,j] = (Fl2(np.array([xl[i,j], yl[i,j]]), ti, b, c, n))
 
   plt.contourf(xl, yl, zl)
-  plt.plot(xd[:,0], xd[:,1], '.r')
+#  plt.plot(xd[:,0], xd[:,1], '.r')
   plt.xlabel(r"$\alpha$")
   plt.ylabel(r"$\beta$")
   plt.show()
-  print(np.mean(xd, axis=0))
-
-  plt.plot(xd[:,0])
-  plt.title("Datos de la variable " r"$\alpha$")
-  plt.xlabel("Iteracion")
-  plt.ylabel("valor")
-  plt.show()
-
-  plt.plot(xd[:,1])
-  plt.title("Datos de la variable " r"$\beta$")
-  plt.xlabel("Iteracion")
-  plt.ylabel("valor")
-  plt.show()
+#  print(np.mean(xd, axis=0))
+#
+#  plt.plot(xd[:,0])
+#  plt.title("Datos de la variable " r"$\alpha$")
+#  plt.xlabel("Iteracion")
+#  plt.ylabel("valor")
+#  plt.show()
+#
+#  plt.plot(xd[:,1])
+#  plt.title("Datos de la variable " r"$\beta$")
+#  plt.xlabel("Iteracion")
+#  plt.ylabel("valor")
+#  plt.show()
 
 Punto2()
