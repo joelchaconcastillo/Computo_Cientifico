@@ -26,8 +26,8 @@ def f(X, n, r1, r2):
 def Metropolis_Hastings(maxite, alpha, beta, burnin):
     
     delta = 1.0
-    mu = alpha*beta
-    x_t = np.array([uniform.rvs(mu-delta, mu+delta)]) # en el soporte...
+    x_t = np.array([uniform.rvs(0.0, 5.0)])  #np.array([uniform.rvs(mu-delta, mu+delta)]) # en el soporte...
+#    x_t = np.array([100])  #np.array([uniform.rvs(mu-delta, mu+delta)]) # en el soporte...
     X_walk =  np.copy(x_t)
     fx_t = gamma.pdf(x_t, alpha, 1.0/beta) 
     qx_t = gamma.pdf(x_t, int(alpha), 1.0/beta) 
@@ -36,7 +36,14 @@ def Metropolis_Hastings(maxite, alpha, beta, burnin):
      y_t = gamma.rvs(int(alpha), 1.0/beta)
      fy_t = gamma.pdf(y_t, alpha, 1.0/beta)
      qy_t = gamma.pdf(y_t, int(alpha), 1.0/beta)
-     rho = min(1.0, (fy_t/fx_t)*(qx_t/qy_t))
+     rho = min(1.0, (fy_t*qx_t)/(fx_t*qy_t))
+#     print(fx_t)
+#     print(fy_t)
+#     print(qx_t)
+#     print(qy_t)
+#     print(rho)
+#     print("--")
+
      if uniform.rvs(0.0, 1.0) <= rho:
        if cont > burnin:
         X_walk = np.vstack((X_walk, y_t))
@@ -44,25 +51,33 @@ def Metropolis_Hastings(maxite, alpha, beta, burnin):
        fx_t = fy_t
        qx_t = qy_t
        cont +=1
-       print(cont)
 
     return X_walk
-maxite = 10000
-alpha=1.3
-beta=1
-burnin=100
+maxite = 1000
+alpha=3.9
+beta=3
+burnin=0
 
 X = Metropolis_Hastings(maxite, alpha, beta, burnin)
 FX = gamma.pdf(X, alpha, 1.0/beta)
+FX1 = gamma.pdf(X, int(alpha), 1.0/beta)
+#print(X)
+#print(FX)
 
+plt.plot(np.log(FX))
+plt.title("Evolucion de la cadena")
+plt.xlabel("iteracion")
+plt.ylabel("log(f(x))")
+plt.show()
 
-p =  pd.DataFrame(X).hist(bins=100, range=(0,5), figsize=(9,9))
+p =  pd.DataFrame(X).hist(bins=30, range=(0,5), figsize=(9,9))
 plt.title("Estimacion del pdf de una distribucion Gamma(" + str(alpha)+","+str(beta)+") \n con una propuesta  Gamma(" + str(int(alpha))+","+str(beta)+")")
 plt.xlabel("x")
 plt.ylabel("f(x)")
 plt.show()
-plt.plot(X, FX, '.')
-plt.title("Valor de la distribución Gamma(" + str(alpha)+","+str(beta)+")")
+plt.plot(X, FX, 'r.')
+plt.plot(X, FX1, 'b.')
+plt.title("Valor de la distribución objetivo Gamma(" + str(alpha)+","+str(beta)+") - Rojo \nValor de la distribución propuesta Gamma(" + str(int(alpha))+","+str(beta)+") - Azul  ")
 plt.xlabel("x")
 plt.ylabel("f(x)")
 plt.show()

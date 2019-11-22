@@ -36,7 +36,7 @@ def fboth(X, Y, n, r1, r2):
     
     
 def Metropolis_Hastings(n, maxite, sigma1, sigma2, r1, r2, burnin):
-    x_t = np.array([uniform.rvs(0.0, 5.0), uniform.rvs(0.0, 2.0)]) ###alpha, beta..
+    x_t = np.array([uniform.rvs(1.0, 4.0), uniform.rvs(0.0, 4.0)]) ###alpha, beta..
     X_walk =  np.copy(x_t)
     cov = np.array([[sigma1**2, 0],[0, sigma2**2]])
     cont = 0
@@ -46,28 +46,28 @@ def Metropolis_Hastings(n, maxite, sigma1, sigma2, r1, r2, burnin):
         continue
      if y_t[1] <= 0.0 or y_t[1] > 5.0:
         continue
-#     fx_t = f(x_t, n, r1, r2) 
-#     fy_t = f(y_t, n, r1, r2)
-#     rho = min(1.0, fy_t/fx_t)
+     fx_t = f(x_t, n, r1, r2) 
+     fy_t = f(y_t, n, r1, r2)
+     rho = min(1.0, fy_t/fx_t)
 
-     fy_x_t = fboth(y_t, x_t, n, r1, r2) 
-     rho = min(1.0, fy_x_t)
+#     fy_x_t = fboth(y_t, x_t, n, r1, r2) 
+#     rho = min(1.0, fy_x_t)
 
 
-     if uniform.rvs(0.0, 0.5) <= rho:
+     if uniform.rvs(0.0, 1.0) <= rho:
        if burnin < cont:
         X_walk = np.vstack((X_walk, y_t))
        x_t = np.copy(y_t)
        cont +=1
 
-    return X_walk
-n = 3
-sigma1 = 0.1
-sigma2 = 0.1
+    return X_walk[1:,:]
+n = 30
+sigma1 = 0.01
+sigma2 = 0.01
 alpha = 3
 beta = 100
-maxite = 6200
-burnin = 1000
+maxite = 10000
+burnin = 1
 X =  gamma.rvs(alpha, 1.0/beta, size=(n))
 r2 = np.sum(X)
 r1 = np.prod(X)
@@ -79,16 +79,29 @@ r1 = np.prod(X)
 
 
 X = Metropolis_Hastings(n, maxite, sigma1, sigma2, r1, r2, burnin)
+#l = len(X[:,1])
 
+#plt.plot(np.abs(X[0:(l-1),0]-X[1:l,0]))
+#plt.title("Desplazamientos de "r"$\alpha$")
+#plt.xlabel("Iteracion")
+#plt.ylabel("Deplazamiento")
+#
+#plt.show()
+#
+#plt.plot(np.abs(X[0:(l-1),1]-X[1:l,1]))
+#plt.title("Desplazamientos de "r"$\beta$")
+#plt.xlabel("Iteracion")
+#plt.ylabel("Deplazamiento")
+#plt.show()
 
-xl, yl = np.mgrid[0.0:6.0:.1, 0.0:6.0:.1]
+xl, yl = np.mgrid[0.0:4.0:.1, 0.0:4.0:.1]
 zl = np.copy(xl)
 for i in range(0, len(xl[0,:])):
   for j in range(0, len(yl[0,:])):
      zl[i,j] = f(np.array([xl[i,j], yl[i,j]]),n, r1, r2)
 
 plt.contourf(xl, yl, zl)
-plt.plot(X[:,0], X[:,1])
+plt.plot(X[:,0], X[:,1], 'r')
 plt.xlabel(r"$\alpha$")
 plt.ylabel(r"$\beta$")
 
