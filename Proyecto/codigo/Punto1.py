@@ -67,12 +67,12 @@ def Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch):
 def MH(maxite, d, Cov):
   x_t = np.zeros(d)
   for i in range(d):
-    x_t[i] =  uniform.rvs(0.0) 
+    x_t[i] =  uniform.rvs(0.01) 
   log_fx_t =  multivariate_normal.logpdf(x_t, np.ones(d), Cov)
   n = 0
   beta = 0.05
   X = np.copy(x_t)
-#  X2 = np.copy(x_t)
+  X2 = np.copy(x_t)
   mix_cov = (0.1**2)*np.ones(d)/(float(d))
   cov_sums = np.zeros((d,d))
   meanx = np.copy(x_t)
@@ -85,8 +85,10 @@ def MH(maxite, d, Cov):
      else:
         idx = choice([0,1],p= [1.0-beta, beta])
         if idx == 0:
+           empirical_cov = cov_sums/(t-d)
            Covp = empirical_cov#np.cov(X2.T)
-           Covp2 = (2.381204**2)*Covp/(float(d)**0.5)
+      #     Covp = np.cov(X2.T)
+           Covp2 = (2.381204**2)*Covp/(float(d))
            y_t = multivariate_normal.rvs(x_t, Covp2)
         elif idx ==1:
            y_t = multivariate_normal.rvs(x_t, mix_cov)
@@ -97,24 +99,27 @@ def MH(maxite, d, Cov):
        log_fx_t = log_fy_t
        n+=1
        print(n)
-#     X2 = np.vstack((X2, x_t))
+     #X2 = np.vstack((X2, x_t))
      ##Incremental mean and incremental variance....
      oldmeanx = np.copy(meanx)
      meanx = (t/(t+1.0))*meanx+ (1.0/(t+1.0))*x_t
      diff1 = oldmeanx-meanx
      diff2 = x_t - meanx
      cov_sums += (t-1.0)*np.outer(diff1, diff1) + np.outer(diff2,diff2)
-     empirical_cov = cov_sums/(t-d)
      ######ratio bound...
-     ratio = (1000+10*Cov**0.5)#.dot((100*empirical_cov)**-0.5)
-     print(ratio)
-    # print(np.linalg.inv(empirical_cov) )
-    # eig = np.linalg.eig(ratio)
-    # b = np.vstack((b, np.sum(np.power(eig, -2))/ (np.sum(np.power(eig, -1))**2)))
-  return X,b[1,:,:]
+#     print(empirical_cov)
+     if n > d:#2*d:
+       empirical_cov =  cov_sums/(t-d)
+       #empirical_cov = np.cov(X2.T)
+       cov1 = scipy.linalg.sqrtm(empirical_cov)
+       cov2_inv = np.linalg.inv(scipy.linalg.sqrtm(Cov))
+       eig = np.linalg.eigvals(cov1.dot(cov2_inv) + np.ones((d,d))*1e-5)
+       v = d*(np.sum(np.power(eig, -2))/ (np.sum(1.0/eig)**2))
+       b = np.vstack((b,v))
+  return X,b[1:]
     
-maxite = 1000
-d = 10 #dimension...
+maxite = 500000
+d = 2 #dimension...
 M = np.zeros((d, d))
 for i in range(d):
   for j in range(d):
@@ -123,9 +128,11 @@ Cov = M.dot(M.T)
 #print(Cov)
 X,b = MH(maxite, d, Cov)
 
-plt.plot(X[:,0])
+#plt.plot(X[:,0])
 plt.plot(b)
-plt.show()
+plt.ylim(0, 4)
+plt.savefig('destination_path.eps', format='eps')
+#plt.show()
 
 #xl, yl = np.mgrid[-10.0:10.0:.1, -10.0:10.0:.1]
 #zl = np.copy(xl)
