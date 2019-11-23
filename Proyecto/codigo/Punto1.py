@@ -116,6 +116,11 @@ def MH(maxite, d, Cov):
        eig = np.linalg.eigvals(cov1.dot(cov2_inv) + np.ones((d,d))*1e-5)
        v = d*(np.sum(np.power(eig, -2))/ (np.sum(1.0/eig)**2))
        b = np.vstack((b,v))
+       if (n%100)==0:
+         plt.plot(b[1:])
+         plt.ylim(0, 5)
+         plt.savefig('destination_path.eps', format='eps')
+
   return X,b[1:]
     
 maxite = 500000
