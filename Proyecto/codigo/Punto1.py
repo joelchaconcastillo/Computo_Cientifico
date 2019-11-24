@@ -67,7 +67,7 @@ def MH(maxite, d, Cov):
        eig = np.linalg.eigvals(cov1.dot(cov2_inv) + np.ones((d,d))*1e-0)
        v = d*(np.sum(np.power(eig, -2))/ (np.sum(1.0/eig)**2))
        b = np.vstack((b,v))
-       if (t%10000)==0:
+       if (t%1000)==0:
          plt.plot(10*np.arange(1, 1+len(b[1:])),  b[1:])
          plt.xlabel("Iteration")
          plt.ylabel("Suboptimality factor "+r"$b$")
@@ -82,8 +82,8 @@ def MH(maxite, d, Cov):
 
   return X,b[1:]
     
-maxite = 1000000
-d = 100 #dimension...
+maxite = 500
+d = 2 #dimension...
 M = np.zeros((d, d))
 for i in range(d):
   for j in range(d):
@@ -93,22 +93,27 @@ Cov = M.dot(M.T)
 X,b = MH(maxite, d, Cov)
 
 #plt.plot(X[:,0])
-plt.plot(b)
-plt.ylim(0, 4)
-plt.savefig('destination_path.eps', format='eps')
+#plt.plot(b)
+#plt.ylim(0, 4)
+#plt.xlabel("iteration")
+#plt.ylabel(r"$x_1$")
+#plt.savefig('X_1.eps', format='eps')
+#plt.close()
+#
 #plt.show()
 
-#xl, yl = np.mgrid[-10.0:10.0:.1, -10.0:10.0:.1]
-#zl = np.copy(xl)
-#for i in range(0, len(xl[0,:])):
-#  for j in range(0, len(yl[0,:])):
-#     zl[i,j] = multivariate_normal.pdf(np.array([xl[i,j], yl[i,j]]), np.zeros(d), Cov)
-#
-#plt.contourf(xl, yl, zl)
-#plt.plot(X[:,0], X[:,1], 'r')
-#plt.xlabel(r"$\alpha$")
-#plt.ylabel(r"$\beta$")
-#
+xl, yl = np.mgrid[-10.0:10.0:.1, -10.0:10.0:.1]
+zl = np.copy(xl)
+for i in range(0, len(xl[0,:])):
+  for j in range(0, len(yl[0,:])):
+     zl[i,j] = multivariate_normal.pdf(np.array([xl[i,j], yl[i,j]]), np.zeros(d), Cov)
+
+plt.contourf(xl, yl, zl)
+plt.plot(X[:,0], X[:,1], 'r', linewidth=0.5)
+plt.xlabel(r"$\alpha$")
+plt.ylabel(r"$\beta$")
+plt.savefig('contour.eps', format='eps')
+plt.close()
 #plt.show()
 #
 

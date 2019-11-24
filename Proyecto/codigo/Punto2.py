@@ -61,10 +61,12 @@ def MH(maxite, d, B):
        log_fx_t = log_fy_t
        #n+=1
        if (t%10000)==0:
-         plt.plot(X[1:,0])
+         print(t)
+         for dd in range(5):
+           plt.plot(X[1:,dd])
          plt.xlabel("Iteration")
-         plt.ylabel(r"$x_1$")
-         plt.savefig('x1.eps', format='eps')
+         plt.ylabel(r"$x_i$")
+         plt.savefig('Banana_x1.eps', format='eps')
          plt.close()
      #X2 = np.vstack((X2, x_t))
      ##Incremental mean and incremental variance....
@@ -77,29 +79,29 @@ def MH(maxite, d, B):
 
   return X
     
-maxite = 10000
-d = 2 #dimension...
+maxite = 100000
+d = 50 #dimension...
 #print(Cov)
 B = 0.1
 X = MH(maxite, d, B)
 
 #plt.plot(X[:,0])
-#plt.ylim(0, 4)
-#plt.savefig('destination_path.eps', format='eps')
-#plt.show()
-
-xl, yl = np.mgrid[-30.0:30.0:.1, -30.0:30.0:.1]
-zl = np.copy(xl)
-for i in range(0, len(xl[0,:])):
-  for j in range(0, len(yl[0,:])):
-     zl[i,j] = f(np.array([xl[i,j], yl[i,j]]), B)
-
-plt.contourf(xl, yl, zl)
-plt.plot(X[:,0], X[:,1], 'r')
-plt.xlabel(r"$\alpha$")
-plt.ylabel(r"$\beta$")
-
-plt.show()
-
-
-
+#plt.xlabel("iteration")
+#plt.ylabel(r"$x_1$")
+#plt.savefig('banana_X_1.eps', format='eps')
+#plt.close()
+#
+#
+#xl, yl = np.mgrid[-30.0:30.0:.1, -30.0:30.0:.1]
+#zl = np.copy(xl)
+#for i in range(0, len(xl[0,:])):
+#  for j in range(0, len(yl[0,:])):
+#     zl[i,j] = f(np.array([xl[i,j], yl[i,j]]), B)
+#
+#plt.contourf(xl, yl, zl)
+#plt.plot(X[:,0], X[:,1], 'r')
+#plt.xlabel(r"$x_1$")
+#plt.ylabel(r"$x_2$")
+#plt.savefig('contour_banana.eps', format='eps')
+#plt.close()
+#
