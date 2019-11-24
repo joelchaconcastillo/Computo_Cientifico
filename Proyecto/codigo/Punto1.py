@@ -22,7 +22,6 @@ def MH(maxite, d, Cov):
   x_t = np.zeros(d)
 #  for i in range(d):
 #    x_t[i] =  uniform.rvs(0.01) 
-  X_t = np.zeros((d,d))
   log_fx_t =  multivariate_normal.logpdf(x_t, np.ones(d), Cov)
   n = 0
   beta = 0.05
@@ -36,10 +35,10 @@ def MH(maxite, d, Cov):
   while t < maxite:
      t += 1.0
      idx = choice([0,1],p= [1.0-beta, beta])
+#     idx=0
      if n <= 2*d or idx ==1:
         y_t = multivariate_normal.rvs(x_t, mix_cov) ##instead it could be something like   y_t = x_t + base_mix_cov*multivariate_normal.rvs(0.0, np.ones((d,d))); base_mix could be decomposition cholesky
-     else:
-        if idx == 0:
+     elif idx == 0:
            empirical_cov = cov_sums/(t-d)
            Covp = empirical_cov#np.cov(X2.T)
       #     Covp = np.cov(X2.T) ###instead of incremental variance....
@@ -50,13 +49,8 @@ def MH(maxite, d, Cov):
        X = np.vstack((X, y_t))
        x_t = np.copy(y_t)
        log_fx_t = log_fy_t
-       #n+=1
-       if (t%10000)==0:
-         plt.plot(X[1:,0])
-         plt.xlabel("Iteration")
-         plt.ylabel(r"$x_1$")
-         plt.savefig('x1.eps', format='eps')
-         plt.close()
+       n+=1
+       print(n)
      #X2 = np.vstack((X2, x_t))
      ##Incremental mean and incremental variance....
      oldmeanx = np.copy(meanx)
@@ -65,21 +59,25 @@ def MH(maxite, d, Cov):
      diff2 = x_t - meanx
      cov_sums += (t-1.0)*np.outer(diff1, diff1) + np.outer(diff2,diff2)
      ######ratio bound...
-#     print(empirical_cov)
-     if t > 2*d:
+     if t > d and  (t%10)==0:
        empirical_cov =  cov_sums/(t-d)
        #empirical_cov = np.cov(X2.T)
        cov1 = scipy.linalg.sqrtm(empirical_cov)
        cov2_inv = np.linalg.inv(scipy.linalg.sqrtm(Cov))
-       eig = np.linalg.eigvals(cov1.dot(cov2_inv) + np.ones((d,d))*1e-5)
+       eig = np.linalg.eigvals(cov1.dot(cov2_inv) + np.ones((d,d))*1e-0)
        v = d*(np.sum(np.power(eig, -2))/ (np.sum(1.0/eig)**2))
        b = np.vstack((b,v))
        if (t%10000)==0:
-         plt.plot(b[1:])
+         plt.plot(10*np.arange(1, 1+len(b[1:])),  b[1:])
          plt.xlabel("Iteration")
          plt.ylabel("Suboptimality factor "+r"$b$")
-         plt.ylim(0, 5)
+#         plt.ylim(0, 5)
          plt.savefig('optimal.eps', format='eps')
+         plt.close()
+         plt.plot(10*np.arange(1, 1+len(X[1:,0])), X[1:,0])
+         plt.xlabel("Iteration")
+         plt.ylabel(r"$x_1$")
+         plt.savefig('x1.eps', format='eps')
          plt.close()
 
   return X,b[1:]

@@ -32,7 +32,6 @@ def MH(maxite, d, B):
   B = 0.1
 #  for i in range(d):
 #    x_t[i] =  uniform.rvs(0.01) 
-  X_t = np.zeros((d,d))
   log_fx_t =  log_f(x_t, B)#multivariate_normal.logpdf(x_t, np.ones(d), Cov)
   n = 0
   beta = 0.05
