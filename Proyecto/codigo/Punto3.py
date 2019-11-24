@@ -20,9 +20,8 @@ np.random.seed(3)
     
 def MH(maxite, d, Cov):
   x_t = np.zeros(d)
-#  for i in range(d):
-#    x_t[i] =  uniform.rvs(0.01) 
-  X_t = np.zeros((d,d))
+  for i in range(d):
+    x_t[i] =  uniform.rvs(0.01) 
   log_fx_t =  multivariate_normal.logpdf(x_t, np.ones(d), Cov)
   n = 0
   beta = 0.05
@@ -33,30 +32,35 @@ def MH(maxite, d, Cov):
   meanx = np.copy(x_t)
   t = 0.0
   b = np.zeros(1)
-  while t < maxite:
+  while n < maxite:
      t += 1.0
-     idx = choice([0,1],p= [1.0-beta, beta])
-     if n <= 2*d or idx ==1:
-        y_t = multivariate_normal.rvs(x_t, mix_cov) ##instead it could be something like   y_t = x_t + base_mix_cov*multivariate_normal.rvs(0.0, np.ones((d,d))); base_mix could be decomposition cholesky
+     if n <= 2*d:
+        y_t = multivariate_normal.rvs(x_t, mix_cov)
      else:
+        idx = choice([0,1],p= [1.0-beta, beta])
         if idx == 0:
            empirical_cov = cov_sums/(t-d)
            Covp = empirical_cov#np.cov(X2.T)
-      #     Covp = np.cov(X2.T) ###instead of incremental variance....
+      #     Covp = np.cov(X2.T)
            Covp2 = (2.381204**2)*Covp/(float(d))
            y_t = multivariate_normal.rvs(x_t, Covp2)
+        elif idx ==1:
+           y_t = multivariate_normal.rvs(x_t, mix_cov)
      log_fy_t = multivariate_normal.logpdf(y_t, np.zeros(d), Cov)
      if np.log(uniform.rvs(0.0, 1.0)) < log_fy_t-log_fx_t:
        X = np.vstack((X, y_t))
-       x_t = np.copy(y_t)
+       x_t = y_t
        log_fx_t = log_fy_t
-       #n+=1
-       if (t%10000)==0:
+       n+=1
+       if (n%100)==0:
          plt.plot(X[1:,0])
          plt.xlabel("Iteration")
          plt.ylabel(r"$x_1$")
+#         plt.ylim(0, 5)
          plt.savefig('x1.eps', format='eps')
          plt.close()
+
+       print(n)
      #X2 = np.vstack((X2, x_t))
      ##Incremental mean and incremental variance....
      oldmeanx = np.copy(meanx)
@@ -66,7 +70,7 @@ def MH(maxite, d, Cov):
      cov_sums += (t-1.0)*np.outer(diff1, diff1) + np.outer(diff2,diff2)
      ######ratio bound...
 #     print(empirical_cov)
-     if t > 2*d:
+     if n > d:#2*d:
        empirical_cov =  cov_sums/(t-d)
        #empirical_cov = np.cov(X2.T)
        cov1 = scipy.linalg.sqrtm(empirical_cov)
@@ -74,7 +78,7 @@ def MH(maxite, d, Cov):
        eig = np.linalg.eigvals(cov1.dot(cov2_inv) + np.ones((d,d))*1e-5)
        v = d*(np.sum(np.power(eig, -2))/ (np.sum(1.0/eig)**2))
        b = np.vstack((b,v))
-       if (t%10000)==0:
+       if (n%100)==0:
          plt.plot(b[1:])
          plt.xlabel("Iteration")
          plt.ylabel("Suboptimality factor "+r"$b$")
@@ -84,8 +88,8 @@ def MH(maxite, d, Cov):
 
   return X,b[1:]
     
-maxite = 1000000
-d = 100 #dimension...
+maxite = 50000
+d = 10 #dimension...
 M = np.zeros((d, d))
 for i in range(d):
   for j in range(d):
