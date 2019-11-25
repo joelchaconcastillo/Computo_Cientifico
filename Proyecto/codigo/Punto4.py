@@ -1,5 +1,5 @@
 import time
-from scipy.stats import uniform, gamma, beta, bernoulli, truncnorm, expon, multivariate_normal, lognorm, cauchy
+from scipy.stats import uniform, gamma, beta, bernoulli, truncnorm, expon, multivariate_normal, lognorm, cauchy, norm
 from scipy.special import gamma as gg, factorial
 import random
 from numpy.random import choice
@@ -18,13 +18,17 @@ np.random.seed(3)
 
    
     
-def Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch):
+def Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch, dimension):
     delta = 1.0
-    x_t = np.array([uniform.rvs(0.0, 5.0), uniform.rvs(0.0, 5.0)]) # en el soporte...
+#    x_t = np.array([uniform.rvs(0.0, 5.0), uniform.rvs(0.0, 5.0)]) # en el soporte...
+    x_t =np.zeros(dimension)
+    for i in range(dimension):
+      x_t[i] = uniform.rvs(0.0, 1000.0)
+#    x_t[0]=1000
     #x_t =np.array([1000,1])# np.array([uniform.rvs(mu[0]-delta, mu[0]+delta), uniform.rvs(mu[1]-delta, mu[1]+delta)]) # en el soporte...
     X_walk =  np.copy(x_t)
-    cov_prop1 = np.identity(2)*sigma1
-    cov_prop2 = np.identity(2)*sigma2
+    cov_prop1 = np.identity(dimension)*sigma1
+    cov_prop2 = np.identity(dimension)*sigma2
     fx_t = multivariate_normal.logpdf(x_t, mu, cov)
     cont = 0.0
     w1 = 0
@@ -55,7 +59,8 @@ def Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch):
        x_t = np.copy(y_t)
        fx_t = fy_t
        cont +=1
-       if (cont % batch ) == 0 and cont > 10:
+
+       if (cont % batch ) == 0:
          pb1 = w1/(w1+w2)
          pb2 = w2/(w1+w2)
          PesosH = np.vstack((PesosH, np.array([pb1, pb2])))
@@ -65,36 +70,44 @@ def Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch):
     pesos = np.array([pb1, pb2])
     return X_walk[1:,:], cont/total, PesosH
 maxite = 10000
+dimension = 100
 cov = np.array([[1.0, 0.9],[0.9, 1.0]])
-mu = np.array([3.0, 5.0])
+M = np.zeros((dimension, dimension))
+for i in range(dimension):
+  for j in range(dimension):
+    M[i,j] = norm.rvs(0.0, 1.0)
+cov = M.dot(M.T)
+
+mu = np.zeros(dimension)#np.array([3.0, 5.0])
 sigma1 = 0.1
-sigma2 = 5.0
-burnin= 100
+sigma2 = 0.5
+burnin= 0
 batch = 100
-X, eficiencia, PesosH = Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch)
+X, eficiencia, PesosH = Metropolis_Hastings(maxite, cov, mu, sigma1, sigma2, burnin, batch, dimension)
 FX = multivariate_normal.pdf(X, mu, cov)
 
 
-plt.plot(np.log(FX))
-plt.title("Random Walk, Final Weights = "+str(PesosH[-1,:])+"  \n Efficiency="+str(eficiencia)+" \n " r" $x_0 = $"+str(X[0,:]) )
-plt.xlabel("Iteration")
-plt.ylabel("log(f(x))")
-plt.savefig('RW_Weightd.eps', format='eps')
-plt.close()
+#plt.plot(np.log(FX))
+plt.title("Random Walk, Final Weights = "+str(PesosH[-1,:])+"  \n Efficiency="+str(eficiencia))
+#plt.xlabel("Iteration")
+#plt.ylabel("log(f(x))")
+#plt.savefig('RW_Weightd.eps', format='eps')
+#plt.close()
 
 
-dist = 5.0
-xl, yl = np.mgrid[(mu[0]-dist):(mu[0]+dist):.1, (mu[1]-dist):(mu[1]+dist):.1]
-zl = np.copy(xl)
-for i in range(0, len(xl[0,:])):
-  for j in range(0, len(xl[0,:])):	
-     zl[i,j] = multivariate_normal.pdf(np.array([xl[i,j], yl[i,j]]), mu, cov)
+#dist = 5.0
+#xl, yl = np.mgrid[(mu[0]-dist):(mu[0]+dist):.1, (mu[1]-dist):(mu[1]+dist):.1]
+#zl = np.copy(xl)
+#for i in range(0, len(xl[0,:])):
+#  for j in range(0, len(xl[0,:])):	
+#     zl[i,j] = multivariate_normal.pdf(np.array([xl[i,j], yl[i,j]]), mu, cov)
 
-plt.contourf(xl, yl, zl)
-plt.plot(X[:,0], X[:,1], 'r.')
+#plt.contourf(xl, yl, zl)
+#plt.plot(X[:,0], X[:,1], 'r.')
+plt.plot(X[:,0])
 plt.xlabel(r"$x_1$")
-plt.ylabel(r"$x_2$")
-plt.savefig('Cointour_4.eps', format='eps')
+#plt.ylabel(r"$x_2$")
+plt.savefig('walk.eps', format='eps')
 plt.close()
 
 
@@ -103,8 +116,8 @@ plt.plot(PesosH[:,0])
 plt.plot(PesosH[:,1])
 plt.xlabel("Batch (each 50 iterations)")
 plt.ylabel("Weight-Value")
-plt.legend([r"$w_1$ de $N_(0, "+str(sigma1)+" I)$", r"$w_2$ de $N_(0, "+str(sigma2)+" I)$"])
+plt.legend([r"$w_1$ of $N_(0, "+str(sigma1)+" I)$", r"$w_2$ of $N_(0, "+str(sigma2)+" I)$"])
 plt.savefig('Weight_Values.eps', format='eps')
-
-plt.show()
+plt.close()
+#plt.show()
 
