@@ -60,13 +60,14 @@ def MH(maxite, d, B):
        x_t = np.copy(y_t)
        log_fx_t = log_fy_t
        #n+=1
-       if (t%10000)==0:
+       if (t%100)==0:
          print(t)
-         for dd in range(5):
+         for dd in range(2):
            plt.plot(X[1:,dd])
          plt.xlabel("Iteration")
          plt.ylabel(r"$x_i$")
          plt.savefig('Banana_x1.eps', format='eps')
+         plt.legend(["x1", "x2"])
          plt.close()
      #X2 = np.vstack((X2, x_t))
      ##Incremental mean and incremental variance....
